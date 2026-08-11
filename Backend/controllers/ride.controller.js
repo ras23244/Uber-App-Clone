@@ -20,7 +20,6 @@ module.exports.createRide = async (req, res) => {
 
         // After responding, asynchronously notify nearby captains
         const pickupCoordinates = await mapsService.getAddressCoordinate(pickup);
-        console.log("Pickup coordinates:", pickupCoordinates);
 
         if (!pickupCoordinates || !pickupCoordinates.lat || !pickupCoordinates.lng) {
             console.error("Invalid pickup coordinates:", pickupCoordinates);
@@ -30,16 +29,7 @@ module.exports.createRide = async (req, res) => {
         const radius = 5000000; // in meters
         const captainsInRadius = await mapsService.getCaptainsInRadius(pickupCoordinates.lat, pickupCoordinates.lng, radius);
 
-        console.log(
-            'Captains found:',
-            captainsInRadius.map(captain => ({
-                id: captain._id,
-                status: captain.status,
-                socketId: captain.socketId,
-                location: captain.location
-            }))
-        );
-        console.log('=================================');
+       
         if (!captainsInRadius || captainsInRadius.length === 0) {
             console.warn("No captains found in the specified radius.");
             return;

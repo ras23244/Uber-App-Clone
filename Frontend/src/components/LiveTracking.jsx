@@ -141,7 +141,6 @@ const AnimatedCaptainMarker = ({ captainCoords }) => {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
         animationFrameRef.current = null;
-        console.log('[gps] captain marker updated:', target);
       }
     };
 

@@ -12,10 +12,7 @@ async function persistCaptainLocation(captainId, location) {
         }
     });
 
-    console.log(
-        `[gps] MongoDB location persisted for captain ${captainId}:`,
-        location
-    );
+   
 }
 
 function initializeSocket(server) {
@@ -27,7 +24,7 @@ function initializeSocket(server) {
     });
 
     io.on('connection', (socket) => {
-        console.log(`Socket connected: ${socket.id}`);
+       
 
         socket.on('join', async (data, acknowledge) => {
             try {
@@ -41,7 +38,6 @@ function initializeSocket(server) {
 
                 // Keep the ID room for compatibility and direct delivery by socket ID.
                 socket.join(userId);
-                console.log(`[socket] ${socket.id} joined room ${userId}`);
 
                 if (type === 'user') {
 
@@ -52,9 +48,7 @@ function initializeSocket(server) {
                         }
                     );
 
-                    console.log(
-                        `User ${userId} joined with socket ${socket.id}`
-                    );
+                   
                     acknowledge?.({ ok: true, type: 'user', socketId: socket.id });
                 }
 
@@ -79,17 +73,7 @@ function initializeSocket(server) {
                         return;
                     }
 
-                    console.log(
-                        `Captain ${userId} is now ACTIVE`
-                    );
-
-                    console.log(
-                        `Captain socket ID: ${socket.id}`
-                    );
-
-                    console.log(
-                        `Captain status: ${captain.status}`
-                    );
+                   
                     acknowledge?.({ ok: true, type: 'captain', socketId: socket.id });
                 }
 
@@ -169,11 +153,6 @@ function initializeSocket(server) {
                         lng: location.lng
                     };
 
-                    console.log(
-                        `[gps] received from captain ${userId}:`,
-                        captainLocation
-                    );
-
                     // =========================
                     // ACTIVE RIDE LOCATION
                     // =========================
@@ -189,16 +168,9 @@ function initializeSocket(server) {
                             .populate('user');
 
                     if (activeRide?.user?.socketId) {
-                        console.log(
-                            `[gps] sending captain-location-update to passenger socket `
-                            + `${activeRide.user.socketId}`
-                        );
                         io.to(activeRide.user.socketId).emit(
                             'captain-location-update',
                             captainLocation
-                        );
-                        console.log(
-                            `[gps] captain-location-update emitted for captain ${userId}`
                         );
                     }
 
@@ -231,10 +203,6 @@ function initializeSocket(server) {
 
             try {
 
-                console.log(
-                    `Socket disconnected: ${socket.id}`
-                );
-
                 // Find captain using socket ID
                 const captain =
                     await captainModel.findOne({
@@ -251,9 +219,7 @@ function initializeSocket(server) {
                         }
                     );
 
-                    console.log(
-                        `Captain ${captain._id} marked INACTIVE`
-                    );
+                  
                 }
 
                 // Find user using socket ID
@@ -271,9 +237,7 @@ function initializeSocket(server) {
                         }
                     );
 
-                    console.log(
-                        `User ${user._id} socket cleared`
-                    );
+                   
                 }
 
             } catch (error) {
@@ -322,18 +286,14 @@ function sendMessageToSocketId(
         return;
     }
 
-    console.log(
-        `[socket] emitting ${messageObject.event} to connected socket ${socketId}`
-    );
+   
 
     targetSocket.emit(
         messageObject.event,
         messageObject.data
     );
 
-    console.log(
-        `[socket] ${messageObject.event} emitted to socket ${socketId}`
-    );
+   
 }
 
 

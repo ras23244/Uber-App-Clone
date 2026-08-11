@@ -31,14 +31,13 @@ const CaptainHome = () => {
     if (!socket || !captainId) return;
 
     const onNewRide = (data) => {
-      console.log('[socket] new-ride received:', data?._id);
       setRide(data);
       setRidePopupPanel(true);
-      console.log('[captain] RidePopUp opened:', data?._id);
+    
     };
 
     const joinCaptain = () => {
-      console.log('[socket] joining captain room:', captainId);
+    
       socket.emit('join', {
         type: 'captain',
         userId: captainId
@@ -76,7 +75,6 @@ const CaptainHome = () => {
           lng: position.coords.longitude
         };
 
-        console.log('[gps] sending captain location:', location);
         socket.emit('update-location-captain', {
           userId: captain._id,
           location
@@ -94,7 +92,6 @@ const CaptainHome = () => {
 
     return () => {
       navigator.geolocation.clearWatch(watchId);
-      console.log('[gps] captain location watcher stopped');
     };
   }, [socket, captain?._id]);
 

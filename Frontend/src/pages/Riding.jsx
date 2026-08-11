@@ -14,13 +14,11 @@ const Riding = () => {
         if (!socket) return
 
         const onRideEnded = () => {
-            console.log('[gps] ride completed; removing captain marker')
             setCaptainCoords(null)
             navigate('/home')
         }
 
         const onCaptainLocationUpdate = (coords) => {
-            console.log('[gps] passenger received captain location:', coords)
             setCaptainCoords(coords)
         }
 

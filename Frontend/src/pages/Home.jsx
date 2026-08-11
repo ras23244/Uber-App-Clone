@@ -107,14 +107,12 @@ const Home = () => {
     }
 
     const onRideEnded = () => {
-      console.log('[gps] ride completed; clearing captain location')
       setCaptainCoords(null)
       setWaitingForDriver(false)
       setRide(null)
     }
 
     const onCaptainLocationUpdate = (coords) => {
-      console.log('[gps] passenger received captain location:', coords)
       setCaptainCoords(coords)
     }
 
@@ -465,7 +463,6 @@ const Home = () => {
 
       )
 
-      console.log('Ride created:', response.data)
 
       return response.data
 

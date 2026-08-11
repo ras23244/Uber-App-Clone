@@ -14,7 +14,6 @@ const migrateGeoLocation = async () => {
             'location.lng': { $exists: true }
         });
 
-        console.log(`Found ${captains.length} captains to migrate.`);
 
         for (const captain of captains) {
             const { ltd, lng } = captain.location;
@@ -27,10 +26,8 @@ const migrateGeoLocation = async () => {
             };
 
             await captain.save();
-            console.log(`✅ Updated: ${captain._id}`);
         }
 
-        console.log('🎉 GeoLocation migration complete.');
         process.exit();
     } catch (err) {
         console.error('❌ Migration error:', err);
