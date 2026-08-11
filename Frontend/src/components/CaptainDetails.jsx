@@ -30,40 +30,6 @@ const CaptainDetails = () => {
 
   const { captain } = useContext(CaptainDataContext)
 
-  useEffect(() => {
-    const updateLocation = async () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const coordinates = {
-              lng: position.coords.longitude,
-              ltd: position.coords.latitude,
-            };
-            try {
-              await axios.post(
-                `${import.meta.env.VITE_BASE_URL}/captains/update-location`,
-                coordinates,
-                {
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                  },
-                }
-              );
-              console.log('Location updated successfully:', coordinates);
-            } catch (err) {
-              console.error('Error updating location:', err);
-            }},
-            (error) => console.error('Error fetching location:', error),
-            { enableHighAccuracy: true }
-          );
-        } else {
-          console.error('Geolocation is not supported by this browser.');
-        }
-      };
-  
-      updateLocation();
-    }, []);
-
   return (
     <div>
       <div className="flex items-center justify-between">

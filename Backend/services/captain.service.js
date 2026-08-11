@@ -34,7 +34,12 @@ module.exports.updateCaptainLocation = async (captainId, coordinates) => {
   try {
     const updatedCaptain = await captainModel.findByIdAndUpdate(
       captainId,
-      { location: coordinates },
+      {
+        location: {
+          type: 'Point',
+          coordinates: [coordinates.lng, coordinates.lat]
+        }
+      },
       { new: true }
     );
     return updatedCaptain;

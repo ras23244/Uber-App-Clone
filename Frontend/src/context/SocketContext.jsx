@@ -15,11 +15,15 @@ const SocketProvider = ({ children }) => {
         });
 
         newSocket.on('connect', () => {
-            console.log(`Connected to server with socket ID: ${newSocket.id}`);
+            console.log(`[socket] connected: ${newSocket.id}`);
         });
 
         newSocket.on('disconnect', () => {
-            console.log('Disconnected from server');
+            console.log('[socket] disconnected');
+        });
+
+        newSocket.on('connect_error', (error) => {
+            console.error('[socket] connection error:', error.message);
         });
 
         setSocket(newSocket);
@@ -29,7 +33,7 @@ const SocketProvider = ({ children }) => {
         };
     }, []);
 
-   
+
     return (
         <SocketContext.Provider value={{ socket }}>
             {children}

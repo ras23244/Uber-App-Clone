@@ -1,51 +1,156 @@
-const mapService = require('../services/maps.service')
-const { validationResult }= require('express-validator')
+// const mapService = require('../services/maps.service')
+// const { validationResult }= require('express-validator')
 
-module.exports.getCoordinates = async(req,res,next)=>{
+// module.exports.getCoordinates = async(req,res,next)=>{
+//     const errors = validationResult(req);
+//     if(!errors.isEmpty()){
+//         console.log("From here")
+//         return res.status(400).json({errors:errors.array()});
+//     }
+
+//     const {address} = req.query;
+
+//     try{
+//         const coordinates = await mapService.getAddressCoordinate(address);
+//         res.status(200).json(coordinates);
+//     }catch(err){
+//         res.status(404).json({message:'Coordinate not found'}); // Revert error response
+//     }
+// }
+
+// module.exports.getDistanceTime= async(req,res,next)=>{
+//     try{
+//         const errors=validationResult(req);
+//         if(!errors.isEmpty()){
+//             return res.status(400).json({errors:errors.array()});
+//         }
+//         const {origin,destination}=req.query;
+
+//         const distanceTime = await mapService.getDistanceTime(origin,destination);
+
+//         res.status(200).json(distanceTime);
+
+//     }catch(err){
+//         res.status(500).json({message:'Internal server error'})
+//     }
+// }
+
+// module.exports.getAutoCompleteSuggestions=async(req,res,next)=>{
+//     try{
+//         const errors=validationResult(req);
+//         if(!errors.isEmpty()){
+//             return res.status(400).json({errors:errors.array()});
+//         }
+//         const {input}=req.query;
+
+//         const suggestions = await mapService.getAutoCompleteSuggestions(input);
+//         res.status(200).json(suggestions)
+//     }catch(err){
+//         res.status(500).json({message:'Internal server error'})
+//     }
+// }
+
+const mapService = require('../services/maps.service');
+const { validationResult } = require('express-validator');
+
+module.exports.getCoordinates = async (req, res, next) => {
     const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        console.log("From here")
-        return res.status(400).json({errors:errors.array()});
+
+    if (!errors.isEmpty()) {
+        console.log("From here");
+
+        return res.status(400).json({
+            errors: errors.array()
+        });
     }
 
-    const {address} = req.query;
+    const { address } = req.query;
 
-    try{
-        const coordinates = await mapService.getAddressCoordinate(address);
+    try {
+        const coordinates =
+            await mapService.getAddressCoordinate(address);
+
         res.status(200).json(coordinates);
-    }catch(err){
-        res.status(404).json({message:'Coordinate not found'}); // Revert error response
+
+    } catch (err) {
+        res.status(404).json({
+            message: 'Coordinate not found'
+        });
     }
-}
+};
 
-module.exports.getDistanceTime= async(req,res,next)=>{
-    try{
-        const errors=validationResult(req);
-        if(!errors.isEmpty()){
-            return res.status(400).json({errors:errors.array()});
+module.exports.getDistanceTime = async (
+    req,
+    res,
+    next
+) => {
+    try {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                errors: errors.array()
+            });
         }
-        const {origin,destination}=req.query;
 
-        const distanceTime = await mapService.getDistanceTime(origin,destination);
+        const {
+            origin,
+            destination
+        } = req.query;
+
+        const distanceTime =
+            await mapService.getDistanceTime(
+                origin,
+                destination
+            );
 
         res.status(200).json(distanceTime);
 
-    }catch(err){
-        res.status(500).json({message:'Internal server error'})
-    }
-}
+    } catch (err) {
+        console.error(
+            'Distance/time controller error:',
+            err
+        );
 
-module.exports.getAutoCompleteSuggestions=async(req,res,next)=>{
-    try{
-        const errors=validationResult(req);
-        if(!errors.isEmpty()){
-            return res.status(400).json({errors:errors.array()});
+        res.status(500).json({
+            message: 'Internal server error'
+        });
+    }
+};
+
+module.exports.getAutoCompleteSuggestions =
+    async (req, res, next) => {
+        try {
+            const errors =
+                validationResult(req);
+
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    errors: errors.array()
+                });
+            }
+
+            const { input } = req.query;
+
+            const suggestions =
+                await mapService
+                    .getAutoCompleteSuggestions(
+                        input
+                    );
+
+            res.status(200).json(
+                suggestions
+            );
+
+        } catch (err) {
+            console.error(
+                'Autocomplete controller error:',
+                err
+            );
+
+            res.status(500).json({
+                message:
+                    'Internal server error'
+            });
         }
-        const {input}=req.query;
-
-        const suggestions = await mapService.getAutoCompleteSuggestions(input);
-        res.status(200).json(suggestions)
-    }catch(err){
-        res.status(500).json({message:'Internal server error'})
-    }
-}
+    };

@@ -10,45 +10,57 @@ module.exports.createRide = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { userId, pickup, destination, vehicleType } = req.body;
+    const { pickup, destination, vehicleType } = req.body;
 
     try {
         const ride = await rideService.createRide({ user: req.user._id, pickup, destination, vehicleType });
-        res.status(200).json({ ride });
+        
+        // Send ride response to user (without OTP)
+        res.status(201).json({ ride });
 
+        // After responding, asynchronously notify nearby captains
         const pickupCoordinates = await mapsService.getAddressCoordinate(pickup);
-       
+        console.log("Pickup coordinates:", pickupCoordinates);
 
-        if (!pickupCoordinates || !pickupCoordinates.ltd || !pickupCoordinates.lng) {
+        if (!pickupCoordinates || !pickupCoordinates.lat || !pickupCoordinates.lng) {
             console.error("Invalid pickup coordinates:", pickupCoordinates);
-            return res.status(400).json({ message: "Invalid pickup coordinates" });
+            return; // Already responded, just log and return
         }
-        
-        const radius = 100000000; // in km
-        const captainsInRadius = await mapsService.getCaptainsInRadius(pickupCoordinates.ltd, pickupCoordinates.lng, radius);
-        
-      console.log("Captains in radius:", captainsInRadius);  
 
+        const radius = 5000000; // in meters
+        const captainsInRadius = await mapsService.getCaptainsInRadius(pickupCoordinates.lat, pickupCoordinates.lng, radius);
+
+        console.log(
+            'Captains found:',
+            captainsInRadius.map(captain => ({
+                id: captain._id,
+                status: captain.status,
+                socketId: captain.socketId,
+                location: captain.location
+            }))
+        );
+        console.log('=================================');
         if (!captainsInRadius || captainsInRadius.length === 0) {
             console.warn("No captains found in the specified radius.");
+            return;
         }
 
-        ride.otp = ""; 
+        ride.otp = "";
         const rideWithUser = await rideModel.findOne({ _id: ride._id }).populate('user');
-   
 
-        captainsInRadius.map(captain=>{
-            sendMessageToSocketId(captain.socketId,{
-            event: 'new-ride',
-            data: rideWithUser
-        })
+        captainsInRadius.map(captain => {
+            sendMessageToSocketId(captain.socketId, {
+                event: 'new-ride',
+                data: rideWithUser
+            })
         })
 
     } catch (err) {
         console.error("Error in createRide:", err);
-        return res.status(500).json({ message: err.message });
+        if (!res.headersSent) {
+            return res.status(500).json({ message: err.message });
+        }
     }
-
 }
 
 module.exports.getFare = async (req, res) => {
@@ -115,7 +127,7 @@ module.exports.endRide= async (req,res) =>{
     }
     const {rideId} = req.body;
     try{
-        const ride = await rideService.endRide(rideId,req.captain._id);
+        const ride = await rideService.endRide(rideId, req.captain);
         sendMessageToSocketId(ride.user.socketId, {
             event: 'ride-ended',
             data: ride
@@ -127,27 +139,27 @@ module.exports.endRide= async (req,res) =>{
 
 }
 
-module.exports.updateCaptainLocation = async (req, res) => {
+module.exports.cancelRide = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-
-    const { captainId, lng, ltd } = req.body;
-
+    
+    const { rideId } = req.body;
+    
     try {
-        // Update captain's location in the database
-        const updatedCaptain = await rideService.updateCaptainLocation(captainId, { lng, ltd });
-
-        // Notify clients about the updated location
-        sendMessageToSocketId(updatedCaptain.socketId, {
-            event: 'location-updated',
-            data: { lng, ltd }
-        });
-
-        return res.status(200).json({ message: "Location updated successfully", location: { lng, ltd } });
+        const ride = await rideService.cancelRide(rideId, req.user._id);
+        
+        // Notify captain if ride was already accepted
+        if (ride.captain && ride.captain.socketId) {
+            sendMessageToSocketId(ride.captain.socketId, {
+                event: 'ride-cancelled',
+                data: ride
+            });
+        }
+        
+        return res.status(200).json({ ride });
     } catch (err) {
-        console.error("Error in updateCaptainLocation:", err);
         return res.status(500).json({ message: err.message });
     }
-};
+}

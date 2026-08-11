@@ -100,22 +100,22 @@ module.exports.getDailyStats = async (req,res,next) =>{
 
 module.exports.logoutCaptain=async(req,res,next)=>{
     res.clearCookie('token');
-    const token=req.cookies.token || req.headers.authorization.split(' ')[1];
+    const token=req.cookies.token || req.headers.authorization?.split(' ')[1];
     
     await blackListTokenModel.create({token});
     res.status(200).json({message:"Logged out successfully"});
 }
 
 module.exports.updateCaptainLocation = async (req, res, next) => {
-  const { lng, ltd } = req.body;
+  const { lng, lat } = req.body;
   const captainId = req.captain._id;
 
-  if (!lng || !ltd) {
+  if (!lng || !lat) {
     return res.status(400).json({ message: 'Longitude and latitude are required.' });
   }
 
   try {
-    const updatedCaptain = await captainService.updateCaptainLocation(captainId, { lng, ltd });
+    const updatedCaptain = await captainService.updateCaptainLocation(captainId, { lng, lat });
     res.status(200).json({ message: 'Location updated successfully', captain: updatedCaptain });
   } catch (err) {
     console.error('Error updating captain location:', err);

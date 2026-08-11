@@ -38,4 +38,10 @@ router.post('/end-ride',
     rideController.endRide
 )
 
+router.post('/cancel',
+    authMiddleware.authUser,
+    body('rideId').isString().withMessage('Invalid ride id'),
+    rideController.cancelRide
+)
+
 module.exports=router

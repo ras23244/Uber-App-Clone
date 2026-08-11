@@ -1,33 +1,53 @@
-import React from 'react'
-import { Link,useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
+import React, { useEffect, useContext, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { SocketContext } from '../context/SocketContext'
-import { useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
 import LiveTracking from '../components/LiveTracking'
 
-const Riding = (props) => {
-    const location = useLocation()  
+const Riding = () => {
+    const location = useLocation()
     const ride = location.state?.ride
     const { socket } = useContext(SocketContext)
     const navigate = useNavigate()
+    const [captainCoords, setCaptainCoords] = useState(null)
 
-    socket.on('ride-ended',(ride)=>{
-       
-        navigate('/home')
-    })
+    useEffect(() => {
+        if (!socket) return
+
+        const onRideEnded = () => {
+            console.log('[gps] ride completed; removing captain marker')
+            setCaptainCoords(null)
+            navigate('/home')
+        }
+
+        const onCaptainLocationUpdate = (coords) => {
+            console.log('[gps] passenger received captain location:', coords)
+            setCaptainCoords(coords)
+        }
+
+        socket.on('ride-ended', onRideEnded)
+        socket.on('captain-location-update', onCaptainLocationUpdate)
+
+        return () => {
+            socket.off('ride-ended', onRideEnded)
+            socket.off('captain-location-update', onCaptainLocationUpdate)
+        }
+    }, [socket, navigate])
 
     return (
         <div className='h-screen'>
-            <Link to={'/home'} className='flex right-2 top-2 items-center justify-center fixed h-10 w-10 bg-amber-500 rounded-full'>
+            <Link to={'/home'} className='flex right-2 top-2 items-center justify-center fixed z-20 h-10 w-10 bg-amber-500 rounded-full'>
                 <i className="text-2xl ri-home-4-line"></i>
             </Link>
 
-            <div className="h-1/2">
-            <LiveTracking />
+            <div className="relative z-0 h-1/2">
+                <LiveTracking
+                    captainCoords={captainCoords}
+                    destinationCoords={ride?.destinationCoordinates}
+                    pickupCoords={ride?.pickupCoordinates}
+                />
             </div>
 
-            <div className="h-1/2 p-3 -mt-4">
+            <div className="relative z-20 h-1/2 overflow-y-auto bg-white p-3 -mt-4">
                 <div className='flex justify-between items-center'>
                     <img className='h-19' src="https://www.pngplay.com/wp-content/uploads/8/Uber-PNG-Photos.png" alt="" />
                     <div className='text-right '>
@@ -39,6 +59,13 @@ const Riding = (props) => {
 
                 <div className='flex flex-col justify-between items-center gap-5'>
                     <div className='w-full mt-3'>
+                        <div className='flex items-center gap-2 p-3 border-b-1 border-gray-300'>
+                            <i className="text-2xl ri-map-pin-range-fill"></i>
+                            <div className='px-4'>
+                                <h3 className='font-bold'>Pickup</h3>
+                                <p className=' text-gray-600'>{ride?.pickup}</p>
+                            </div>
+                        </div>
                         <div className="flex items-center gap-2 p-3 border-b-1 border-gray-300">
                             <i className="text-2xl ri-map-pin-2-line"></i>
                             <div className='px-4'>

@@ -1,80 +1,466 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { LoadScript, GoogleMap } from '@react-google-maps/api';
+// import React, { useState, useEffect, useRef } from 'react';
+// import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+// import L from 'leaflet';
+// import 'leaflet/dist/leaflet.css';
 
-const libraries = ['marker'];
+// // Fix default marker icons for Leaflet in bundlers
+// delete L.Icon.Default.prototype._getIconUrl;
+// L.Icon.Default.mergeOptions({
+//   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+//   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+//   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+// });
 
-const containerStyle = {
-  width: '100%',
-  height: '100%' 
-};
+// // Custom icons
+// const userIcon = new L.Icon({
+//   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+//   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+//   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+//   iconSize: [25, 41],
+//   iconAnchor: [12, 41],
+//   popupAnchor: [1, -34],
+//   shadowSize: [41, 41]
+// });
 
-const LiveTracking = () => {
-  const [currentPosition, setCurrentPosition] = useState(null);
-  const mapRef = useRef(null);
-  const markerRef = useRef(null);
+// const captainIcon = new L.Icon({
+//   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+//   iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+//   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+//   iconSize: [25, 41],
+//   iconAnchor: [12, 41],
+//   popupAnchor: [1, -34],
+//   shadowSize: [41, 41]
+// });
+
+// const pickupIcon = new L.Icon({
+//   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+//   iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+//   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+//   iconSize: [25, 41],
+//   iconAnchor: [12, 41],
+//   popupAnchor: [1, -34],
+//   shadowSize: [41, 41]
+// });
+
+// const destinationIcon = new L.Icon({
+//   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+//   iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+//   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+//   iconSize: [25, 41],
+//   iconAnchor: [12, 41],
+//   popupAnchor: [1, -34],
+//   shadowSize: [41, 41]
+// });
+
+// // Component to recenter map when position changes
+// const RecenterMap = ({ position }) => {
+//   const map = useMap();
+//   useEffect(() => {
+//     if (position) {
+//       map.setView(position, map.getZoom());
+//     }
+//   }, [position, map]);
+//   return null;
+// };
+
+// // Component to fit bounds when route coords exist
+// const FitBounds = ({ bounds }) => {
+//   const map = useMap();
+//   useEffect(() => {
+//     if (bounds && bounds.length >= 2) {
+//       map.fitBounds(bounds, { padding: [50, 50] });
+//     }
+//   }, [bounds, map]);
+//   return null;
+// };
+
+// const LiveTracking = ({ pickupCoords, destinationCoords, captainCoords, routeCoords }) => {
+//   const [currentPosition, setCurrentPosition] = useState(null);
+
+//   useEffect(() => {
+//     const updatePosition = () => {
+//       if (navigator.geolocation) {
+//         navigator.geolocation.getCurrentPosition(
+//           (position) => {
+//             setCurrentPosition([position.coords.latitude, position.coords.longitude]);
+//           },
+//           (error) => console.error('Error fetching location:', error),
+//           { enableHighAccuracy: true }
+//         );
+//       }
+//     };
+
+//     updatePosition();
+//     const interval = setInterval(updatePosition, 10000);
+//     return () => clearInterval(interval);
+//   }, []);
+
+//   const center = captainCoords
+//     ? [captainCoords.lat, captainCoords.lng]
+//     : currentPosition || [28.6139, 77.2090]; // default to Delhi
+
+//   // Calculate bounds for fitting the map
+//   const bounds = [];
+//   if (pickupCoords) bounds.push([pickupCoords.lat, pickupCoords.lng]);
+//   if (destinationCoords) bounds.push([destinationCoords.lat, destinationCoords.lng]);
+//   if (captainCoords) bounds.push([captainCoords.lat, captainCoords.lng]);
+//   if (currentPosition) bounds.push(currentPosition);
+
+//   return (
+//     <div style={{ height: '100%', width: '100%' }}>
+//       <MapContainer
+//         center={center}
+//         zoom={15}
+//         style={{ height: '100%', width: '100%' }}
+//         zoomControl={false}
+//       >
+//         <TileLayer
+//           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+//           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+//         />
+
+//         {/* Recenter map if no route bounds */}
+//         {bounds.length < 2 && <RecenterMap position={center} />}
+
+//         {/* Fit bounds when we have route markers */}
+//         {bounds.length >= 2 && <FitBounds bounds={bounds} />}
+
+//         {/* Current user position */}
+//         {currentPosition && (
+//           <Marker position={currentPosition} icon={userIcon}>
+//             <Popup>You are here</Popup>
+//           </Marker>
+//         )}
+
+//         {/* Captain position */}
+//         {captainCoords && (
+//           <Marker position={[captainCoords.lat, captainCoords.lng]} icon={captainIcon}>
+//             <Popup>Captain</Popup>
+//           </Marker>
+//         )}
+
+//         {/* Pickup marker */}
+//         {pickupCoords && (
+//           <Marker position={[pickupCoords.lat, pickupCoords.lng]} icon={pickupIcon}>
+//             <Popup>Pickup</Popup>
+//           </Marker>
+//         )}
+
+//         {/* Destination marker */}
+//         {destinationCoords && (
+//           <Marker position={[destinationCoords.lat, destinationCoords.lng]} icon={destinationIcon}>
+//             <Popup>Destination</Popup>
+//           </Marker>
+//         )}
+
+//         {/* Route polyline */}
+//         {routeCoords && routeCoords.length > 0 && (
+//           <Polyline
+//             positions={routeCoords}
+//             color="#4A90D9"
+//             weight={4}
+//             opacity={0.8}
+//           />
+//         )}
+//       </MapContainer>
+//     </div>
+//   );
+// };
+
+// export default LiveTracking;
+
+
+
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMap
+} from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png'
+});
+
+// User icon
+const userIcon = new L.Icon({
+  iconUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  iconRetinaUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Captain icon
+const captainIcon = new L.Icon({
+  iconUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+  iconRetinaUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Pickup icon
+const pickupIcon = new L.Icon({
+  iconUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  iconRetinaUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Destination icon
+const destinationIcon = new L.Icon({
+  iconUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+  iconRetinaUrl:
+    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const InitialViewport = ({ pickupCoords, destinationCoords }) => {
+  const map = useMap();
+  const hasFittedInitialRoute = useRef(false);
 
   useEffect(() => {
-    const updatePosition = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const newPos = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            };
-            setCurrentPosition(newPos);
-          },
-          (error) => console.error('Error fetching location:', error),
-          { enableHighAccuracy: true }
-        );
+    if (hasFittedInitialRoute.current) return;
+
+    const bounds = [pickupCoords, destinationCoords]
+      .filter(Boolean)
+      .map((coords) => [coords.lat, coords.lng]);
+
+    if (bounds.length >= 2) {
+      map.fitBounds(bounds, {
+        padding: [60, 60],
+        maxZoom: 15
+      });
+      hasFittedInitialRoute.current = true;
+    }
+  }, [destinationCoords, map, pickupCoords]);
+
+  return null;
+};
+
+const AnimatedCaptainMarker = ({ captainCoords }) => {
+  const markerRef = useRef(null);
+  const animationFrameRef = useRef(null);
+  const initialPositionRef = useRef([
+    captainCoords.lat,
+    captainCoords.lng
+  ]);
+
+  useEffect(() => {
+    const marker = markerRef.current;
+    if (!marker) return undefined;
+
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+    }
+
+    const start = marker.getLatLng();
+    const target = {
+      lat: captainCoords.lat,
+      lng: captainCoords.lng
+    };
+    const startedAt = performance.now();
+    const duration = 800;
+
+    const animate = (timestamp) => {
+      const progress = Math.min((timestamp - startedAt) / duration, 1);
+      const easedProgress = progress * (2 - progress);
+      const latitude = start.lat + (target.lat - start.lat) * easedProgress;
+      const longitude = start.lng + (target.lng - start.lng) * easedProgress;
+
+      marker.setLatLng([latitude, longitude]);
+
+      if (progress < 1) {
+        animationFrameRef.current = requestAnimationFrame(animate);
       } else {
-        console.error('Geolocation is not supported by this browser.');
+        animationFrameRef.current = null;
+        console.log('[gps] captain marker updated:', target);
       }
     };
 
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+  }, [captainCoords]);
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={initialPositionRef.current}
+      icon={captainIcon}
+    >
+      <Popup>
+        <strong>Captain</strong>
+      </Popup>
+    </Marker>
+  );
+};
+
+const LiveTracking = ({
+  pickupCoords,
+  destinationCoords,
+  captainCoords,
+  routeCoords
+}) => {
+  const [currentPosition, setCurrentPosition] = useState(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    const updatePosition = () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentPosition([
+            position.coords.latitude,
+            position.coords.longitude
+          ]);
+        },
+        (error) => {
+          console.error('Error fetching location:', error);
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 5000,
+          timeout: 10000
+        }
+      );
+    };
+
     updatePosition();
-    const interval = setInterval(updatePosition, 10000); // Update every 10 seconds
+
+    const interval = setInterval(updatePosition, 10000);
+
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    console.log("this is current position", currentPosition);
-    if (markerRef.current && currentPosition) {
-      markerRef.current.position = currentPosition;
-    }
-  }, [currentPosition]);
-
-  const onLoad = async (map) => {
-    mapRef.current = map;
-
-    if (!currentPosition) return;
-
-    const { AdvancedMarkerElement } = await window.google.maps.importLibrary('marker');
-
-    const marker = new AdvancedMarkerElement({
-      map,
-      position: currentPosition,
-      title: 'You are here',
-    });
-
-    markerRef.current = marker;
-  };
+  const center = currentPosition || [28.6139, 77.209];
 
   return (
-    <LoadScript
-      googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
-      libraries={libraries}
-    >
-      {currentPosition && (
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          center={currentPosition}
-          zoom={15}
-          onLoad={onLoad}
-          options={{ mapId: 'DEMO_MAP_ID' }}
+    <div className="h-full w-full">
+      <MapContainer
+        center={center}
+        zoom={15}
+        scrollWheelZoom={true}
+        dragging={true}
+        touchZoom={true}
+        doubleClickZoom={true}
+        zoomControl={true}
+        attributionControl={true}
+        style={{
+          height: '100%',
+          width: '100%',
+          zIndex: 0
+        }}
+      >
+        <InitialViewport
+          pickupCoords={pickupCoords}
+          destinationCoords={destinationCoords}
         />
-      )}
-    </LoadScript>
+
+        {currentPosition && (
+          <Marker
+            position={currentPosition}
+            icon={userIcon}
+          >
+            <Popup>
+              <strong>Your location</strong>
+            </Popup>
+          </Marker>
+        )}
+
+        {captainCoords && (
+          <AnimatedCaptainMarker captainCoords={captainCoords} />
+        )}
+
+        {pickupCoords && (
+          <Marker
+            position={[
+              pickupCoords.lat,
+              pickupCoords.lng
+            ]}
+            icon={pickupIcon}
+          >
+            <Popup>
+              <strong>Pickup</strong>
+            </Popup>
+          </Marker>
+        )}
+
+        {destinationCoords && (
+          <Marker
+            position={[
+              destinationCoords.lat,
+              destinationCoords.lng
+            ]}
+            icon={destinationIcon}
+          >
+            <Popup>
+              <strong>Destination</strong>
+            </Popup>
+          </Marker>
+        )}
+
+        {routeCoords && routeCoords.length > 0 && (
+          <Polyline
+            positions={routeCoords}
+            pathOptions={{
+              color: '#2563eb',
+              weight: 5,
+              opacity: 0.8
+            }}
+          />
+        )}
+
+        <TileLayer
+          attribution='&copy; OpenStreetMap contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+      </MapContainer>
+    </div>
   );
 };
 
