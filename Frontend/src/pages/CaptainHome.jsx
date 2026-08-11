@@ -240,7 +240,7 @@ const CaptainHome = () => {
 
   const confirmRide = async (rideId) => {
     try {
-      await axios.post(
+      const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/rides/confirm`,
         {
           rideId,
@@ -253,6 +253,7 @@ const CaptainHome = () => {
         }
       );
 
+      setRide(response.data.ride);
       setRidePopupPanel(false);
       setConfirmRidePopupPanel(true);
     } catch (error) {
