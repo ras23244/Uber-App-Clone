@@ -16,7 +16,10 @@ const cookieParser= require('cookie-parser');
 app.use(cookieParser());
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: 'https://ridebookingapp-o6ko.onrender.com',
+    credentials: true
+}));
 app.use(express.urlencoded({extended:true}));
 
 app.get('/',(req,res)=>{
